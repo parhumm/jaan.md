@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Test C — enablejsapi + origin</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main>
+      <p><a href="https://yt.jaan.md/">← Home</a></p>
+      <h1>Test C — enablejsapi + origin</h1>
+      <p class="kv"><strong>Subdomain:</strong> <code>c.yt.jaan.md</code></p>
+      <p class="kv"><strong>Purpose:</strong> IMVBox-style API identity pair (<code>enablejsapi=1</code> with matching <code>origin</code>), no <code>widget_referrer</code>.</p>
+      <p class="kv"><strong>Video ID:</strong> <code>ZrFi-Hi4GBk</code></p>
+
+      <section class="card">
+        <iframe
+          src="https://www.youtube.com/embed/ZrFi-Hi4GBk?autoplay=0&controls=1&rel=0&playsinline=1&enablejsapi=1&origin=https%3A%2F%2Fc.yt.jaan.md"
+          title="Test C — enablejsapi + origin"
+          width="640"
+          height="360"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+      </section>
+
+      <h2>Configuration</h2>
+      <pre><code>&lt;iframe
+  src="https://www.youtube.com/embed/ZrFi-Hi4GBk?autoplay=0&amp;controls=1&amp;rel=0&amp;playsinline=1&amp;enablejsapi=1&amp;origin=https%3A%2F%2Fc.yt.jaan.md"
+  title="Test C — enablejsapi + origin"
+  width="640" height="360"
+  referrerpolicy="strict-origin-when-cross-origin"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen&gt;
+&lt;/iframe&gt;</code></pre>
+      <p class="muted">Note: <code>origin</code> must match this page's actual host (<code>c.yt.jaan.md</code>) — otherwise YouTube treats the embed-identity signal as inconsistent.</p>
+
+      <h2>Instructions</h2>
+      <p>Click the native YouTube play button and watch at least 60–120 seconds.</p>
+
+      <h2>Expected learning</h2>
+      <p>
+        Tests the IMVBox-style API identity pair without <code>widget_referrer</code>.
+        If Test C shows up in YouTube Studio External Sources but Test B doesn't, the <code>enablejsapi</code> + <code>origin</code> pair is what unlocks attribution.
+      </p>
+
+      <h2>QA checklist</h2>
+      <ol>
+        <li>Open DevTools → Network.</li>
+        <li>Find the request to <code>youtube.com/embed/ZrFi-Hi4GBk</code>.</li>
+        <li>Confirm the <code>Referer</code> header is <code>https://c.yt.jaan.md/</code> — not absent, not <code>no-referrer</code>.</li>
+        <li>Confirm no YouTube <strong>Error 153</strong> in the player.</li>
+        <li>Play manually and watch 60–120 seconds.</li>
+        <li>For Test F, confirm DevTools console logs <code>[YT_TEST] … READY</code> and <code>[YT_TEST] … STATE PLAYING</code>. (Not applicable on this page.)</li>
+      </ol>
+    </main>
+  </body>
+</html>

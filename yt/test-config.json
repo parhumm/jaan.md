@@ -1,0 +1,12 @@
+{
+  "rootDomain": "https://yt.jaan.md",
+  "referrerPolicy": "strict-origin-when-cross-origin",
+  "tests": [
+    { "id": "A", "subdomain": "a.yt.jaan.md", "path": "/a-current-televika", "videoId": "lBQfBKQ2-L4", "model": "current-televika" },
+    { "id": "B", "subdomain": "b.yt.jaan.md", "path": "/b-referrer-policy", "videoId": "RTIPjOEVZIE", "model": "baseline-plus-referrerpolicy" },
+    { "id": "C", "subdomain": "c.yt.jaan.md", "path": "/c-origin-api",      "videoId": "ZrFi-Hi4GBk", "model": "enablejsapi-origin" },
+    { "id": "D", "subdomain": "d.yt.jaan.md", "path": "/d-widget-referrer", "videoId": "UqKvW7ggYWo", "model": "widget-referrer-only" },
+    { "id": "E", "subdomain": "e.yt.jaan.md", "path": "/e-full-fixed",      "videoId": "Xepdyj_BDew", "model": "full-fixed-static-iframe" },
+    { "id": "F", "subdomain": "f.yt.jaan.md", "path": "/f-full-api-player", "videoId": "BLx3d7m8l-c", "model": "full-iframe-api-player" }
+  ]
+}

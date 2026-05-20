@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>YouTube Embed Attribution Tests — yt.jaan.md</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main>
+      <h1>YouTube Embed Attribution Tests</h1>
+      <p>
+        Six minimal embed configurations × six distinct YouTube videos × six distinct subdomains, served from one Cloudflare Pages project.
+        The goal is to determine which embed configuration YouTube Studio actually attributes — so we can ship the right pattern for Televika.
+      </p>
+      <p class="muted">
+        All routes receive <code>Referrer-Policy: strict-origin-when-cross-origin</code> from both the <code>_headers</code> file and the routing middleware.
+        Test A omits only the <em>iframe-level</em> <code>referrerpolicy</code> attribute; the server-level policy still applies.
+      </p>
+
+      <div class="callout">
+        <strong>⚠ Use subdomain URLs for real testing.</strong>
+        The path-equivalent URLs (e.g., <code>yt.jaan.md/a-current-televika</code>) are for debugging only — they produce a <code>Referer</code> of <code>yt.jaan.md</code> instead of the per-test subdomain, breaking experimental isolation between tests.
+      </div>
+
+      <h2>Tests</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Subdomain</th>
+            <th>Path-equivalent (debug)</th>
+            <th>Video ID</th>
+            <th>Purpose</th>
+            <th>Expected learning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A</td>
+            <td><a href="https://a.yt.jaan.md/">a.yt.jaan.md</a></td>
+            <td><a href="/a-current-televika">/a-current-televika</a></td>
+            <td><code>lBQfBKQ2-L4</code></td>
+            <td>Current Televika baseline</td>
+            <td>Confirms whether Televika's iframe params alone work on a clean referrer-safe domain. If yes, Televika's issue is elsewhere (headers, overlay, SPA env).</td>
+          </tr>
+          <tr>
+            <td>B</td>
+            <td><a href="https://b.yt.jaan.md/">b.yt.jaan.md</a></td>
+            <td><a href="/b-referrer-policy">/b-referrer-policy</a></td>
+            <td><code>RTIPjOEVZIE</code></td>
+            <td>Baseline + iframe <code>referrerpolicy</code></td>
+            <td>Tests whether the explicit iframe-level <code>referrerpolicy</code> attribute changes attribution beyond the server-level header.</td>
+          </tr>
+          <tr>
+            <td>C</td>
+            <td><a href="https://c.yt.jaan.md/">c.yt.jaan.md</a></td>
+            <td><a href="/c-origin-api">/c-origin-api</a></td>
+            <td><code>ZrFi-Hi4GBk</code></td>
+            <td><code>enablejsapi</code> + <code>origin</code></td>
+            <td>Tests the IMVBox-style API identity pair (<code>enablejsapi=1</code> with matching <code>origin</code>) without <code>widget_referrer</code>.</td>
+          </tr>
+          <tr>
+            <td>D</td>
+            <td><a href="https://d.yt.jaan.md/">d.yt.jaan.md</a></td>
+            <td><a href="/d-widget-referrer">/d-widget-referrer</a></td>
+            <td><code>UqKvW7ggYWo</code></td>
+            <td><code>widget_referrer</code> only</td>
+            <td>Tests whether <code>widget_referrer</code> alone is sufficient as an analytics attribution hint.</td>
+          </tr>
+          <tr>
+            <td>E</td>
+            <td><a href="https://e.yt.jaan.md/">e.yt.jaan.md</a></td>
+            <td><a href="/e-full-fixed">/e-full-fixed</a></td>
+            <td><code>Xepdyj_BDew</code></td>
+            <td>Full fixed static iframe</td>
+            <td>Main production candidate (all signals combined). If this video appears in YouTube Studio External Sources and others don't, ship this config.</td>
+          </tr>
+          <tr>
+            <td>F</td>
+            <td><a href="https://f.yt.jaan.md/">f.yt.jaan.md</a></td>
+            <td><a href="/f-full-api-player">/f-full-api-player</a></td>
+            <td><code>BLx3d7m8l-c</code></td>
+            <td>Full YouTube IFrame API player</td>
+            <td>Closest to IMVBox: programmatic player with full analytics-friendly setup. Console logs confirm playback events.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Test execution</h2>
+      <ul>
+        <li><strong>50–80 manual plays per video</strong> is the recommended minimum.</li>
+        <li>Each play should watch <strong>60–120 seconds</strong>.</li>
+        <li>Use <strong>different real users, devices, and networks</strong>. Mass plays from one device/IP will be suppressed by YouTube.</li>
+        <li>Always play from the <strong>subdomain URLs</strong>, not the path-equivalents.</li>
+        <li><strong>Wait 48–72 hours</strong> before checking YouTube Studio.</li>
+      </ul>
+
+      <h2>Where to look in YouTube Studio</h2>
+      <p>Per video:</p>
+      <ol>
+        <li><strong>Content</strong> → select the video → <strong>Analytics</strong>.</li>
+        <li><strong>Reach</strong> tab → <strong>Traffic source: External</strong>. Look for entries referencing the corresponding subdomain.</li>
+        <li><strong>Advanced Mode</strong> → check <strong>Traffic source type</strong>, <strong>Playback location</strong>, and <strong>Direct or unknown</strong> (often catches suppressed referrers).</li>
+      </ol>
+
+      <h2>QA checklist (per test page)</h2>
+      <ol>
+        <li>Open DevTools → Network.</li>
+        <li>Find the request to <code>youtube.com/embed/&lt;VIDEO_ID&gt;</code>.</li>
+        <li>Confirm the <code>Referer</code> header is <code>https://&lt;subdomain&gt;/</code> — not absent, not <code>no-referrer</code>.</li>
+        <li>Confirm no YouTube <strong>Error 153</strong> in the player.</li>
+        <li>Play manually and watch 60–120 seconds.</li>
+        <li>For Test F, confirm DevTools console logs <code>[YT_TEST] … READY</code> and <code>[YT_TEST] … STATE PLAYING</code>.</li>
+      </ol>
+    </main>
+  </body>
+</html>

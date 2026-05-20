@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Test F — Full YouTube IFrame API Player</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main>
+      <p><a href="https://yt.jaan.md/">← Home</a></p>
+      <h1>Test F — Full YouTube IFrame API Player</h1>
+      <p class="kv"><strong>Subdomain:</strong> <code>f.yt.jaan.md</code></p>
+      <p class="kv"><strong>Purpose:</strong> Programmatic YouTube IFrame API player with full analytics-friendly setup. Closest analog to IMVBox's embed.</p>
+      <p class="kv"><strong>Video ID:</strong> <code>BLx3d7m8l-c</code></p>
+
+      <section class="card">
+        <div id="player-f"></div>
+      </section>
+
+      <h2>Configuration</h2>
+      <pre><code>// Loaded script: https://www.youtube.com/iframe_api
+
+new YT.Player("player-f", {
+  width: 640,
+  height: 360,
+  videoId: "BLx3d7m8l-c",
+  playerVars: {
+    autoplay: 0,
+    controls: 1,
+    rel: 0,
+    playsinline: 1,
+    origin: "https://f.yt.jaan.md",
+    widget_referrer: "https://f.yt.jaan.md/"
+  },
+  events: {
+    onReady, onStateChange, onError
+  }
+});
+
+// onReady also sets:
+//   iframe.referrerpolicy = "strict-origin-when-cross-origin"
+//   iframe.title = "Test F - Full YouTube IFrame API Player"
+//   and logs the generated iframe.src</code></pre>
+
+      <h2>Instructions</h2>
+      <p>Click the native YouTube play button and watch at least 60–120 seconds. Open DevTools → Console before clicking play so you can see the <code>[YT_TEST]</code> log lines.</p>
+
+      <h2>Expected learning</h2>
+      <p>
+        Closest to IMVBox's setup. The console logs (<code>READY</code>, <code>IFRAME_SRC</code>, <code>STATE</code>, <code>PLAYING_INFO</code>) confirm that playback actually started and let you inspect which params the YouTube API generated into the final iframe <code>src</code>.
+        If Test F appears in YouTube Studio External Sources but the static iframes (B–E) don't, the API-driven setup is what unlocks attribution.
+      </p>
+
+      <h2>QA checklist</h2>
+      <ol>
+        <li>Open DevTools → Network.</li>
+        <li>Find the request to <code>youtube.com/embed/BLx3d7m8l-c</code>.</li>
+        <li>Confirm the <code>Referer</code> header is <code>https://f.yt.jaan.md/</code> — not absent, not <code>no-referrer</code>.</li>
+        <li>Confirm no YouTube <strong>Error 153</strong> in the player.</li>
+        <li>Play manually and watch 60–120 seconds.</li>
+        <li>Confirm DevTools console logs <code>[YT_TEST] f-full-api-player READY</code>, <code>[YT_TEST] f-full-api-player IFRAME_SRC …</code>, <code>[YT_TEST] f-full-api-player STATE PLAYING</code>, and <code>[YT_TEST] f-full-api-player PLAYING_INFO {…}</code>.</li>
+      </ol>
+    </main>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+      window.onYouTubeIframeAPIReady = function () {
+        // eslint-disable-next-line no-new
+        new YT.Player("player-f", {
+          width: 640,
+          height: 360,
+          videoId: "BLx3d7m8l-c",
+          playerVars: {
+            autoplay: 0,
+            controls: 1,
+            rel: 0,
+            playsinline: 1,
+            origin: "https://f.yt.jaan.md",
+            widget_referrer: "https://f.yt.jaan.md/"
+          },
+          events: {
+            onReady: function (e) {
+              console.log("[YT_TEST]", "f-full-api-player", "READY");
+              var iframe = e.target.getIframe();
+              iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+              iframe.setAttribute("title", "Test F - Full YouTube IFrame API Player");
+              console.log("[YT_TEST]", "f-full-api-player", "IFRAME_SRC", iframe.src);
+            },
+            onStateChange: function (e) {
+              var STATES = {
+                "-1": "UNSTARTED",
+                "0": "ENDED",
+                "1": "PLAYING",
+                "2": "PAUSED",
+                "3": "BUFFERING",
+                "5": "CUED"
+              };
+              var name = STATES[String(e.data)] || ("UNKNOWN_" + e.data);
+              console.log("[YT_TEST]", "f-full-api-player", "STATE", name);
+              if (e.data === YT.PlayerState.PLAYING) {
+                console.log("[YT_TEST]", "f-full-api-player", "PLAYING_INFO", {
+                  currentTime: e.target.getCurrentTime(),
+                  duration: e.target.getDuration(),
+                  page: location.pathname,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            },
+            onError: function (e) {
+              console.error("[YT_TEST]", "f-full-api-player", "ERROR", e.data);
+            }
+          }
+        });
+      };
+    </script>
+  </body>
+</html>
